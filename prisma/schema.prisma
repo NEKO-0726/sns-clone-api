@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//ユーザーがどんな情報を持っているかをmodelに定義する
+model User {
+  //autoincrementは自動でIDを振る
+  //idはプライマリキーであることを示す
+  //uniqueは重複がダメ
+  id       Int      @id @default(autoincrement())
+  username String
+  email    String   @unique
+  password String
+  posts    Post[]
+  profile  Profile?
+}
+
+model Post {
+  //authorIdはrelationshipを示す
+  //model Userのidを参照する
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model Profile {
+  id              Int     @id @default(autoincrement())
+  bio             String? //自己紹介文
+  profileImageUrl String? //画像のパス
+  userId          Int     @unique
+  user            User    @relation(fields: [userId], references: [id])
+}
+
+//ここの内容を変更したらmigrateを実行してDBに反映させる
+//migrateはmodelをSQLのDDLに変換して実行する
+//npx prisma migrate dev --name init
+//追加でmigrateするときはnpx prisma migrate devこれでいける
